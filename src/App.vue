@@ -1,11 +1,10 @@
-<!-- src/App.vue -->
 <template>
   <div id="app">
-    <h1>Movie List App</h1>
     <nav>
-      <RouterLink to="/">Home</RouterLink> |
-      <RouterLink to="/about">About</RouterLink> |
+      <RouterLink to="/">Home</RouterLink>
+      <RouterLink to="/about">About</RouterLink>
       <RouterLink to="/movie-list">Movie List</RouterLink>
+      <RouterLink to="/new-movie-form">Add New Movie</RouterLink>
     </nav>
     <router-view />
   </div>
@@ -19,9 +18,14 @@ export default {
 
 <style>
 #app {
-  text-align: center;
+  font-family: Arial, sans-serif;
 }
+
 nav {
-  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+  background-color: #1e1e2e;
 }
 </style>

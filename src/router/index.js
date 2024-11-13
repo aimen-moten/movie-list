@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from '../views/HomeView.vue';
 import AboutView from '../views/AboutView.vue';
 import MovieListView from '../views/MovieListView.vue';
+import NewMovieView from '@/views/NewMovieView.vue';
 
 const routes = [
   {
@@ -20,6 +21,9 @@ const routes = [
     name: 'movie-list',
     component: MovieListView,
   },
+  { path: "/new-movie-form", 
+    name: "new-movie-form", 
+    component: NewMovieView },
 ];
 
 const router = createRouter({
