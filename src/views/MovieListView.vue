@@ -1,4 +1,9 @@
 <template>
+  <div v-if="!signInSuccess">
+      <SignInForm @SignIn="userSignIn" />
+      <p v-if="signInError">{{ signInError }}</p>
+  </div>
+  <div v-else>
   <div class="movie-list container">
     <h1>Movie List</h1>
 
@@ -37,27 +42,47 @@
       />
     </div>
   </div>
+  </div>
 </template>
 
 <script>
 import { query, collection, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/init.js";
 import Movie from "../components/Movie.vue";
+import SignInForm from "@/components/SignInForm.vue";
 
 export default {
   name: "MovieListView",
-  components: { Movie },
+  components: { Movie, SignInForm },
   data() {
     return {
       movieList: [],
       genreFilter: "",
       durationFilter: null,
+      signInSuccess: false,
+      signInError: '',
+      user: null,
     };
   },
   created() {
     this.getAllMovies();
   },
   methods: {
+    async userSignIn(signInObj) {
+      const { signInEmail, signInPassword } = signInObj;
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
+        this.user = userCredential.user;
+        this.signInSuccess = true;
+        this.signInError = '';
+        alert(`Successful sign in for ${this.user.email}`);
+        this.loadMovies();
+      } catch (error) {
+        console.error(error.code, error.message);
+        this.signInError = error.message;
+        this.signInSuccess = false;
+      }
+    },
     async getAllMovies() {
       this.movieList = [];
       const q = query(collection(db, "movies"));
