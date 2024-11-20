@@ -1,124 +1,44 @@
 <template>
-  <div v-if="!signInSuccess">
-      <SignInForm @SignIn="userSignIn" />
-      <p v-if="signInError">{{ signInError }}</p>
-  </div>
-  <div v-else>
-  <div class="movie-list container">
-    <h1>Movie List</h1>
-
-    <!-- Genre Filter -->
-    <div class="filter-section">
-      <label for="genreFilter">Filter by Genre:</label>
-      <input
-        id="genreFilter"
-        v-model="genreFilter"
-        placeholder="Enter genre (e.g., Comedy)"
-      />
-      <button @click="queryByGenre">Apply</button>
-    </div>
-
-    <!-- Duration Filter -->
-    <div class="filter-section">
-      <label for="durationFilter">Filter by Duration (in hours):</label>
-      <input
-        type="number"
-        v-model.number="durationFilter"
-        placeholder="Enter minimum duration"
-      />
-      <button @click="filterByDuration">Apply</button>
-    </div>
-
-    <div class="movies-grid">
-      <Movie
-        v-for="(movie, index) in movieList"
-        :key="index"
-        :title="movie.title"
-        :releaseYear="movie.releaseYear"
-        :rating="movie.rating"
-        :genre="movie.genre"
-        :durationH="movie.durationHour"
-        :durationM="movie.durationMinute"
-      />
-    </div>
-  </div>
+  <div class="movie-list">
+    <h2>Movie List</h2>
+    <ul v-if="movies.length">
+      <li v-for="movie in movies" :key="movie.id">
+        <strong>{{ movie.title }}</strong> ({{ movie.releaseYear }}) - 
+        {{ movie.durationHour }}h {{ movie.durationMinute }}m | Rating: {{ movie.rating }}
+        | Genres: {{ movie.genre.join(", ") }}
+      </li>
+    </ul>
+    <p v-else>No movies available. Add some!</p>
   </div>
 </template>
 
 <script>
-import { query, collection, where, getDocs } from "firebase/firestore";
-import { db } from "../firebase/init.js";
-import Movie from "../components/Movie.vue";
-import SignInForm from "@/components/SignInForm.vue";
+import { useMovieStore } from "../stores/movieStore";
 
 export default {
   name: "MovieListView",
-  components: { Movie, SignInForm },
   data() {
     return {
-      movieList: [],
-      genreFilter: "",
-      durationFilter: null,
-      signInSuccess: false,
-      signInError: '',
-      user: null,
+      movies: [],
     };
   },
   created() {
-    this.getAllMovies();
-  },
-  methods: {
-    async userSignIn(signInObj) {
-      const { signInEmail, signInPassword } = signInObj;
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, signInEmail, signInPassword);
-        this.user = userCredential.user;
-        this.signInSuccess = true;
-        this.signInError = '';
-        alert(`Successful sign in for ${this.user.email}`);
-        this.loadMovies();
-      } catch (error) {
-        console.error(error.code, error.message);
-        this.signInError = error.message;
-        this.signInSuccess = false;
-      }
-    },
-    async getAllMovies() {
-      this.movieList = [];
-      const q = query(collection(db, "movies"));
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        this.movieList.push(doc.data());
-      });
-    },
-    async queryByGenre() {
-      this.movieList = [];
-      const q = query(
-        collection(db, "movies"),
-        where("genre", "array-contains", this.genreFilter)
-      );
-      const querySnapshot = await getDocs(q);
-      querySnapshot.forEach((doc) => {
-        this.movieList.push(doc.data());
-      });
-    },
-    filterByDuration() {
-      this.movieList = this.movieList.filter(
-        (movie) => movie.durationHour >= this.durationFilter
-      );
-    },
+    const movieStore = useMovieStore();
+    movieStore.fetchMovies().then(() => {
+      this.movies = movieStore.movies;
+    });
   },
 };
 </script>
 
 <style scoped>
-.filter-section {
-  margin-bottom: 20px;
-}
-
-.movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+.movie-list {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #2b2b3b;
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 </style>

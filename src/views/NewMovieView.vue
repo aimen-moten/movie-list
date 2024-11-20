@@ -1,8 +1,8 @@
 <template>
   <div>
-    <div v-if="!signUpSuccess">
+    <div v-if="!getSignUpSuccess">
       <SignUpForm @SignUp="userSignUp" />
-      <p v-if="signUpError">{{ signUpError }}</p>
+      <p v-if="getSignUpError">{{ getSignUpError }}</p>
     </div>
     <div v-else>
       <h1>Add Movie Form</h1>
@@ -13,9 +13,9 @@
 
 <script>
 import SignUpForm from '../components/SignUpForm.vue';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase/init.js';
 import MovieForm from '../components/MovieForm.vue';
+import { useUserStore } from '../stores/userStore';
+import { mapState, mapActions } from 'pinia';
 
 export default {
   name: 'NewMovieView',
@@ -23,28 +23,11 @@ export default {
     SignUpForm,
     MovieForm,
   },
-  data() {
-    return {
-      signUpSuccess: false,
-      userName: '',
-      signUpError: '',
-    };
+  computed: {
+    ...mapState(useUserStore, ['getSignUpSuccess', 'getSignUpError']),
   },
   methods: {
-    async userSignUp(signUpObj) {
-      const { signUpEmail, signUpPassword } = signUpObj;
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
-        this.userName = userCredential.user.email;
-        this.signUpSuccess = true;
-        this.signUpError = '';
-        alert(`Successful sign up for ${this.userName}`);
-      } catch (error) {
-        this.userName = '';
-        this.signUpError = error.message;
-        this.signUpSuccess = false;
-      }
-    },
+    ...mapActions(useUserStore, ['userSignUp']),
   },
 };
 </script>
